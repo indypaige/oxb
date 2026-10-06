@@ -20,12 +20,13 @@
         };
       in {
         packages.default = oxb;
-        packages.export = pkgs.stdenv.mkDerivation {
+        packages.export = page: pkgs.stdenv.mkDerivation {
           name = "oxb";
           src  = ./.;
 
           installPhase = ''
           mkdir -p $out
+          cp ${page} blog.org
           ${oxb}/bin/oxb
           cp -r blog/* $out
           '';
