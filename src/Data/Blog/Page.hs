@@ -61,15 +61,54 @@ instance ToHtml Meta where
 
 instance ToHtml Page where
   toHtmlRaw = toHtml
-  toHtml p  = div_ $ do
-    header_ [class_ "post-header"] $ h1_ pageName'
 
-    div_ [class_ "post-body"] $ do
-      toHtml $ p^.pageMeta
-      toHtml $ p^.pageBody
-      toHtml $ p^.pageSect
-        where
-          pageName' = toHtml (p^.pageName)
+  toHtml p = do
+    doctype_
+    html_ [lang_ "en"] $ do
+      head_ $ do
+        meta_ [name_ "viewport", content_ "width=device-width, initial-scale=1"]
+
+        meta_ [charset_ "utf-8"]
+
+        title_ pageName'
+
+        link_ [rel_ "stylesheet", href_ "/static/styles.css"]
+        link_ [rel_ "icon" , href_ "/static/favicon.ico"]
+
+        script_ [src_ "/static/htmx.min.js"] ""
+        script_ [src_ "/static/hyperscript.min.js"] ""
+
+        meta_ [name_ "description", content_ "silly website"]
+
+        meta_ [name_ "author", content_ "Indy Paige"]
+
+      body_ $ do
+        header_ [class_ "post-header"] $
+          h1_ pageName'
+
+        div_ [class_ "layout"] $ do
+          main_ [class_ "content"] $
+            article_ [class_ "box post-body"] $ do
+              toHtml $ p^.pageMeta
+              toHtml $ p^.pageBody
+              toHtml $ p^.pageSect
+
+          aside_
+            [ class_ "sidebar"
+            , makeAttribute "hx-get" "/hx/links"
+            , makeAttribute "hx-trigger" "load"
+            ]
+            mempty
+
+        div_
+          [ makeAttribute "hx-get" "/hx/footer"
+          , makeAttribute "hx-swap" "outerHTML"
+          , makeAttribute "hx-trigger" "load"
+          ]
+          mempty
+
+    where
+      pageName' = toHtml (p^.pageName)
 
 pages :: OrgDocument -> [Page]
 pages doc = catMaybes $ map toPage (getSections doc)
