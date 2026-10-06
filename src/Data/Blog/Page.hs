@@ -54,28 +54,22 @@ toPage s = do
 
 instance ToHtml Meta where
   toHtmlRaw           = toHtml
-  toHtml (Meta a d _) = div_ [class_ "meta"] $ do
+  toHtml (Meta a d _) = div_ [class_ "post-meta"] $ do
     span_ (toHtml a)
     br_ []
     span_ (toHtml d)
 
 instance ToHtml Page where
   toHtmlRaw = toHtml
-  toHtml p  = html_ $ do
-    head_ $ do
-      meta_ [name_ "viewport", content_ "width=device-width, initial-scale=1" ]
-      link_ [rel_ "stylesheet", href_ "https://indigopaige.blog/styles.css"]
-      meta_ [charset_ "utf-8"]
-      title_ pageName'
-    body_ $ do
-      header_ $ h1_ pageName'
+  toHtml p  = div_ $ do
+    header_ [class_ "post-header"] $ h1_ pageName'
 
-      main_ [class_ "box page"] $ do
-        toHtml $ p^.pageMeta
-        toHtml $ p^.pageBody
-        toHtml $ p^.pageSect
-          where
-            pageName' = toHtml (p^.pageName)
+    div_ [class_ "post-body"] $ do
+      toHtml $ p^.pageMeta
+      toHtml $ p^.pageBody
+      toHtml $ p^.pageSect
+        where
+          pageName' = toHtml (p^.pageName)
 
 pages :: OrgDocument -> [Page]
 pages doc = catMaybes $ map toPage (getSections doc)
@@ -86,3 +80,4 @@ getSections = f . documentSections
     f (x:xs) | "blog" `elem` sectionTags x = x:(f xs)
     f (x:xs)                               = f (sectionSubsections x ++ xs)
     f []                                   = []
+

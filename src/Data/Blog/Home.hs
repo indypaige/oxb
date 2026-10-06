@@ -35,43 +35,36 @@ toHome doc = do
 
 instance ToHtml Home where
   toHtmlRaw = toHtml
-  toHtml h  = html_ $ do
-    head_ $ do
-      meta_ [name_ "viewport", content_ "width=device-width, initial-scale=1" ]
-      link_ [rel_ "stylesheet", href_ "https://indigopaige.blog/styles.css"]
-      title_ $ title
-      meta_ [charset_ "utf-8"]
-    body_ $ do
-      header_ $ h1_ title
+  toHtml h  = div_ $ do
+    header_ $ h1_ [class_ "blog-title"] title
 
-      main_ [class_ "box"] $ do
-        ul_ [class_ "links"] $ foldl f mempty (h^.homePages)
+    main_ [class_ "blog-main"] $ do
+      ul_ [class_ "blog-links"] $ foldl f mempty (h^.homePages)
     where
       title          = toHtml (h^.homeTitle)
 
       f last current = do
         last
         li_ $ do
-          a_ [class_ "link", href_ uri] name
+          a_ [class_ "blog-link", href_ uri] name
         where
           name = toHtml (current^.pageName)
-          uri  = "/" <> current^.pageMeta.metaPath 
+          uri  = "/blog/" <> current^.pageMeta.metaPath
 
 writeHome :: Home -> IO ()
 writeHome home = do
   createDirectoryIfMissing False "blog"
+  createDirectoryIfMissing False "blog/posts"
   homePage >> other
   where
     homePage = do
       TIO.writeFile "./blog/index.html" $  renderText (toHtml home)
 
     other    = mapM_ f (home^.homePages)
-    f a      = do
-      createDirectoryIfMissing False dirPath
-      TIO.writeFile filePath' text
+    f a      = TIO.writeFile filePath' text
       where
-        filePath' = dirPath <> "/" <> "index.html"
-        dirPath   = "./blog/" <> mp
+        filePath' = dirPath <> ".html"
+        dirPath   = "./blog/posts/" <> mp
 
         mp        = unpack $ a^.pageMeta.metaPath
         text      = renderText (toHtml a)
