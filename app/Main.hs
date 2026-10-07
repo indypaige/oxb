@@ -1,6 +1,6 @@
 module Main where
 
-import qualified Data.Text.Lazy.IO as TIO
+import qualified Data.Text.IO as TIO
 import Data.Text (Text, pack, unpack)
 import Data.Functor.Identity
 import Org.Parser.Document
