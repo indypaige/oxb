@@ -19,8 +19,8 @@ import Lucid
 
 main :: IO ()
 main = do
-  str <- readFile name
-  let doc = parseOrgDoc defaultOrgOptions name (pack str)
+  str <- TIO.readFile name
+  let doc = parseOrgDoc defaultOrgOptions name str
   case toHome doc of
     Nothing -> print "failed to make home page"
     Just x  -> writeHome x
